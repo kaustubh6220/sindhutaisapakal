@@ -1,6 +1,71 @@
+'use client'
+
+import { useState } from "react";
+import toast from "react-hot-toast";
 import { MdLocationOn, MdPhone, MdMail } from "react-icons/md";
 
 const Contact = () => {
+
+  const [formData, setFormData] = useState({
+    fullName: "",
+    number: "",
+    email: "",
+    state: "",
+    opinion: "",
+  });
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+
+    // Indian phone number validation
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!phoneRegex.test(formData.number)) {
+      toast.error("Please enter a valid 10-digit mobile number");
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/contactUs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        toast.success(
+          "Form submitted successfully. We will contact you."
+        );
+
+        setFormData({
+          fullName: "",
+          number: "",
+          email: "",
+          state: "",
+          opinion: "",
+        });
+      } else {
+        toast.error(data.message || "Something went wrong");
+      }
+    } catch (error) {
+      toast.error("Network error. Please try again.");
+    }
+  };
+
   return (
     <main className="w-full mt-20 mb-10">
 
@@ -46,35 +111,54 @@ const Contact = () => {
                 Get In Touch
               </h2>
 
-              <form className="grid grid-cols-2 gap-6">
+              <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-6">
                 <input
+                  required
                   type="text"
+                  name="fullName"
+                  value={formData.fullName}
+                  onChange={handleChange}
                   placeholder="Full Name"
                   className="col-span-1 rounded-lg px-5 py-3 text-sm outline-none bg-white/90 backdrop-blur-sm border border-gray-200 hover:border-gray-300 focus:border-black transition"
                 />
                 <input
+                  required
                   type="tel"
+                  name="number"
+                  value={formData.number}
+                  onChange={handleChange}
                   placeholder="Contact Number"
                   className="col-span-1 rounded-lg px-5 py-3 text-sm outline-none bg-white/90 backdrop-blur-sm border border-gray-200 hover:border-gray-300 focus:border-black transition"
                 />
                 <input
+                  required
                   type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
                   placeholder="Email"
                   className="col-span-1 rounded-lg px-5 py-3 text-sm outline-none bg-white/90 backdrop-blur-sm border border-gray-200 hover:border-gray-300 focus:border-black transition"
                 />
                 <input
+                  required
                   type="text"
+                  name="state"
+                  value={formData.state}
+                  onChange={handleChange}
                   placeholder="State"
                   className="col-span-1 rounded-lg px-5 py-3 text-sm outline-none bg-white/90 backdrop-blur-sm border border-gray-200 hover:border-gray-300 focus:border-black transition"
                 />
 
                 <textarea
+                  name="opinion"
+                  value={formData.opinion}
+                  onChange={handleChange}
                   placeholder="Your opinion"
                   className="col-span-2 rounded-lg px-5 py-4 text-sm outline-none resize-none h-28 bg-white/90 backdrop-blur-sm border border-gray-200 hover:border-gray-300 focus:border-black transition"
                 />
 
                 <div className="col-span-2 flex justify-center mt-4">
-                  <button className="bg-yellow-400 text-black px-8 py-3 rounded-lg font-semibold hover:bg-yellow-500 transition-all transform hover:scale-105 shadow-lg">
+                  <button type="submit" className="bg-yellow-400 text-black px-8 py-3 rounded-lg font-semibold hover:bg-yellow-500 transition-all transform hover:scale-105 shadow-lg">
                     Submit
                   </button>
                 </div>
