@@ -27,10 +27,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+      </head>
+
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Header/>
+        <Header />
         {children}
         <Toaster
           position="top-center"
@@ -43,11 +47,11 @@ export default function RootLayout({
               padding: "16px 20px",
               borderRadius: "12px",
               fontWeight: "500",
-              width:"fit",
+              width: "fit",
             },
           }}
         />
-        <Footer/>
+        <Footer />
       </body>
     </html>
   );

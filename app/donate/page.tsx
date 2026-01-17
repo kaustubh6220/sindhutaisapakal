@@ -26,6 +26,73 @@ const Donate = () => {
         message: "",
     });
 
+    const handleDonate = async () => {
+        if (!amount || amount < 100) {
+            alert("Minimum donation amount is ₹100");
+            return;
+        }
+
+        // 1. Create order on backend
+        const res = await fetch("/api/donation/create-order", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                amount,
+                type,
+                ...form,
+            }),
+        });
+
+        if (!res.ok) {
+            alert("Unable to initiate payment");
+            return;
+        }
+
+        const data = await res.json();
+
+        // 2. Razorpay options
+        const options = {
+            key: process.env.NEXT_PUBLIC_RAZORPAY_KEY!,
+            amount: data.amount,
+            currency: data.currency,
+            order_id: data.orderId,
+
+            name: "Saptasindhu Mahila Sanstha",
+            description: "Donation",
+
+            prefill: {
+                name: form.name,
+                email: form.email,
+                contact: form.mobile,
+            },
+
+            handler: async function (response: any) {
+                // 3. Verify payment (UX purpose only)
+                await fetch("/api/donation/verify", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(response),
+                });
+
+                alert("Thank you! Your donation was successful.");
+            },
+
+            modal: {
+                ondismiss: function () {
+                    console.log("Payment popup closed");
+                },
+            },
+
+            theme: {
+                color: "#facc15",
+            },
+        };
+
+        const razorpay = new (window as any).Razorpay(options);
+        razorpay.open();
+    };
+
+
     return (
         <main className="w-full bg-[#ffffff]  pb-20">
 
@@ -212,9 +279,13 @@ const Donate = () => {
                                 />
 
                                 <div className="text-center mt-6">
-                                    <button className="bg-yellow-400 hover:bg-yellow-500 text-white font-semibold px-10 py-4 rounded-xl">
+                                    <button
+                                        onClick={handleDonate}
+                                        className="bg-yellow-400 hover:bg-yellow-500 text-white font-semibold px-10 py-4 rounded-xl"
+                                    >
                                         Proceed To Donate
                                     </button>
+
                                 </div>
                             </>
                         )}
