@@ -1,3 +1,6 @@
+export const runtime = "nodejs";
+
+
 import crypto from "crypto";
 import { NextResponse } from "next/server";
 import Donation from "@/lib/database/model/donations.model";
