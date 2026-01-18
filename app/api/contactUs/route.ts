@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connect } from "@/lib/database/connection";
 import ContactUs from "@/lib/database/model/contactUs.model";
+import { sendContactConfirmationEmail } from "@/lib/mail/contactUs";
+
+export const runtime = "nodejs";
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,6 +27,12 @@ export async function POST(request: NextRequest) {
       opinion,
     });
 
+    // ✅ SEND CONFIRMATION EMAIL
+    await sendContactConfirmationEmail({
+      to: email,
+      name: fullName,
+    });
+
     return NextResponse.json(
       {
         success: true,
@@ -33,7 +42,6 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error: any) {
-    // 🔴 Duplicate email error
     if (error.code === 11000) {
       return NextResponse.json(
         { message: "This email is already registered" },

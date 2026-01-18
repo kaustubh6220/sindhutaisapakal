@@ -1,9 +1,9 @@
 export const runtime = "nodejs";
 
-
 import crypto from "crypto";
 import { NextResponse } from "next/server";
 import Donation from "@/lib/database/model/donations.model";
+import { sendDonationSuccessEmail } from "@/lib/mail/mailer";
 import { connect } from "@/lib/database/connection";
 
 export async function POST(req: Request) {
@@ -25,28 +25,37 @@ export async function POST(req: Request) {
   const payment = event.payload.payment?.entity;
   const orderId = payment?.order_id;
 
-  switch (event.event) {
-    case "payment.captured":
-      await Donation.findOneAndUpdate(
-        { razorpayOrderId: orderId },
-        {
-          status: "SUCCESS",
-          razorpayPaymentId: payment.id,
-          webhookEvent: event.event,
-        }
-      );
-      break;
+  if (event.event === "payment.captured") {
+    const donation = await Donation.findOneAndUpdate(
+      { razorpayOrderId: orderId },
+      {
+        status: "SUCCESS",
+        razorpayPaymentId: payment.id,
+        webhookEvent: event.event,
+      },
+      { new: true }
+    );
 
-    case "payment.failed":
-      await Donation.findOneAndUpdate(
-        { razorpayOrderId: orderId },
-        {
-          status: "FAILED",
-          failureReason: payment.error_description,
-          webhookEvent: event.event,
-        }
-      );
-      break;
+    // 🔔 SEND EMAIL AFTER SUCCESS
+    if (donation?.email) {
+      await sendDonationSuccessEmail({
+        to: donation.email,
+        name: donation.name || "Donor",
+        amount: donation.amount,
+        orderId: donation.razorpayOrderId,
+      });
+    }
+  }
+
+  if (event.event === "payment.failed") {
+    await Donation.findOneAndUpdate(
+      { razorpayOrderId: orderId },
+      {
+        status: "FAILED",
+        webhookEvent: event.event,
+        failureReason: payment.error_description,
+      }
+    );
   }
 
   return NextResponse.json({ received: true });
