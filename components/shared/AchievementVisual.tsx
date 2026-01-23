@@ -40,7 +40,6 @@ const AchievementVisual: React.FC<AchievementVisualProps> = ({ imageSrc, positio
         </defs>
       </svg>
 
-      {/* Rings */}
       <svg
         width="360"
         height="120"
@@ -52,7 +51,6 @@ const AchievementVisual: React.FC<AchievementVisualProps> = ({ imageSrc, positio
         <ellipse cx="180" cy="70" rx="90" ry="20" fill="#FACC15" />
       </svg>
 
-      {/* Hexagon */}
       <div
         className="absolute z-10 w-[240px] h-[280px] bg-[#FDE68A] p-1 shadow-2xl"
         style={{
