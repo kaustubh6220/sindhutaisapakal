@@ -9,7 +9,7 @@ const Home = () => {
   return (
     <>
       <section
-        className="relative w-full h-screen bg-cover bg-top grayscale"
+        className="relative w-full h-screen bg-cover bg-top "
         style={{ backgroundImage: "url('/assets/images/bg-heros.png')" , color: "gray"}}
       >
         <div className="absolute inset-0 bg-black/40" />
